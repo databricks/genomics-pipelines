@@ -1,0 +1,27 @@
+# Java targets
+target
+project/target
+
+# Distribution / packaging
+build/
+maven-repo/
+
+# Mac
+.DS_Store
+
+# Sphinx documentation
+docs/build
+
+# Editor files
+*.swp
+*.swo
+*.swn
+*.iml
+.idea
+
+# Logs
+adam.log
+unit-tests.log
+
+# Big files
+test-data/big-files/

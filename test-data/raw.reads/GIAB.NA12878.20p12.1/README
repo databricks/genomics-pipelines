@@ -1,0 +1,26 @@
+To generate sequence ID-sorted FASTQ files from BAM:
+
+samtools sort -n NA12878.20p12.1.30x.bam | \
+samtools fastq \
+  -1 reads_one_unsorted.fastq \
+  -2 reads_two_unsorted.fastq \
+  -s singletons_unsorted.fastq \
+  -
+cat reads_one_unsorted.fastq | \
+  paste - - - - | \
+  sort -k1,1 -t " " | \
+  tr "\t" "\n" > reads_one.fastq
+cat reads_two_unsorted.fastq | \
+  paste - - - - | \
+  sort -k1,1 -t " " | \
+  tr "\t" "\n" > reads_two.fastq
+cat singletons_unsorted.fastq | \
+  paste - - - - | \
+  sort -k1,1 -t " " | \
+  tr "\t" "\n" > singletons.fastq
+bgzip reads_one.fastq
+bgzip reads_two.fastq
+bgzip singletons.fastq
+rm reads_one_unsorted.fastq
+rm reads_two_unsorted.fastq
+rm singletons_unsorted.fastq

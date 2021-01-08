@@ -1,0 +1,8 @@
+The VCFs were generated with HaplotypeCaller in GATK 4.1.4.1.
+
+For example:
+~/gatk/gatk HaplotypeCaller \
+  --input ~/gatk/src/test/resources/large/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.bam \
+  --reference ~/gatk/src/test/resources/large/human_g1k_v37.20.21.fasta \
+  --max-reads-per-alignment-start 0 \
+  --output CEUTrio.HiSeq.WGS.b37.NA12878.20.21.vcf

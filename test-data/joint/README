@@ -1,0 +1,7 @@
+The large GVCF files for NA19625, HG00096 and HG00268 consist of parts of chromosomes 20-21.
+These are from the Broad Institutes's Github repository,
+https://github.com/broadinstitute/gatk/tree/master/src/test/resources/large/gvcfs.
+
+The genotyped VCF file was created by running CombineGVCFs and GenotypeGVCFs on the gVCFs, with the
+setting --allow-old-rms-mapping-quality-annotation-data.
+These were last generated using GATK 4.1.4.1.

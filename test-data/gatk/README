@@ -1,0 +1,22 @@
+The attached script will regenerate golden files for DNASeq, MutSeq and joint genotyping using a
+local installation of the GATK.
+
+If the golden file already exists and its version already matches the local GATK version, it will
+not be re-generated.
+
+Instructions:
+- Clone the GATK repo to your local root directory
+  + cd ~
+  + git clone https://github.com/broadinstitute/gatk.git
+- Check out the desired version of the GATK
+  + cd ~/gatk
+  + For example: git checkout 4.1.4.0
+- Build the GATK
+  + cd ~/gatk
+  + ./gradlew
+- Downloaded required Git LFS objects
+  + cd ~/gatk
+  + For example: git lfs pull --include="Homo_sapiens_assembly38.20.21*"
+- Regenerate golden files from the test-data directory
+  + cd ~/universe/hls/common/test-data
+  + ./regenerate-golden-files.sh

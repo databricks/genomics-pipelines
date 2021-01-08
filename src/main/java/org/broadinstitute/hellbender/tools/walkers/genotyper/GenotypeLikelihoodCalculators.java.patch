@@ -1,0 +1,146 @@
+10d9
+< import java.util.function.Supplier;
+13,17c12,13
+<  * NOTE: This class has been modified from the original in GATK to better support multithreading.
+<  * At a high level, all mutable state that was previously wrapped in a synchronized block now
+<  * lives in a thread local [[TableState]].
+<  *
+<  * For a detailed diff as of 2020/06/04, see GenotypeLikelihoodCalculators.java.patch.
+---
+>  * Genotype likelihood calculator utility. This class is thread-safe since access to shared mutable state is
+>  * synchronized.
+25a22,23
+>     private static final Logger logger = LogManager.getLogger(GenotypeLikelihoodCalculators.class);
+> 
+27,28c25,29
+<      * This class holds the mutable state used to calculate likelihoods. To enable lock-free access
+<      * to this state, it is replicated for each thread.
+---
+>      * The current maximum ploidy supported by the tables.
+>      * <p>
+>      *     Its initial value indicates the initial capacity of the shared {@link #genotypeTableByPloidy}. Feel free
+>      *     to change it to anything reasonable that is non-negative.
+>      * </p>
+30,37c31
+<     private static class TableState {
+<         public int maximumPloidy = 2;
+<         public int maximumAllele = 1;
+<         public int[][] alleleFirstGenotypeOffsetByPloidy = buildAlleleFirstGenotypeOffsetTable(maximumPloidy, maximumAllele);
+<         public GenotypeAlleleCounts[][] genotypeTableByPloidy = buildGenotypeAlleleCountsTable(maximumPloidy,maximumAllele,alleleFirstGenotypeOffsetByPloidy);
+<     }
+< 
+<     private static final Logger logger = LogManager.getLogger(GenotypeLikelihoodCalculators.class);
+---
+>     private int maximumPloidy = 2; // its initial value is the initial capacity of the shared tables.
+49,54c43,69
+<     private static ThreadLocal<TableState> tableStateThreadLocal = ThreadLocal.withInitial(new Supplier<TableState>() {
+<         @Override
+<         public TableState get() {
+<             return new TableState();
+<         }
+<     });
+---
+>     /**
+>      * The current maximum allele index supported by the tables.
+>      * <p>
+>      *     Its initial value indicates the initial capacity of the shared {@link #alleleFirstGenotypeOffsetByPloidy} table.
+>      *     Feel free to change it to anything reasonable that is non-negative.
+>      * </p>
+>      */
+>     private int maximumAllele = 1; // its initial value is the initial capacity of the shared tables.
+> 
+>     /**
+>      * Shared copy of the offset table as described in {@link #buildGenotypeAlleleCountsTable(int, int, int[][])}.
+>      *
+>      * This reference holds the largest requested so far in terms of maximum-allele and maximum-ploidy.
+>      */
+>     private int[][] alleleFirstGenotypeOffsetByPloidy =
+>             buildAlleleFirstGenotypeOffsetTable(maximumPloidy, maximumAllele);
+> 
+> 
+>     /**
+>      * Shared table of genotypes give the ploidy sorted by their index in the likelihood array.
+>      *
+>      * <p>
+>      *  Its format is described in {@link #buildGenotypeAlleleCountsTable(int, int, int[][])}.
+>      * </p>
+>      */
+>     private GenotypeAlleleCounts[][] genotypeTableByPloidy =
+>             buildGenotypeAlleleCountsTable(maximumPloidy,maximumAllele,alleleFirstGenotypeOffsetByPloidy);
+56a72
+> 
+245c261
+<     public GenotypeLikelihoodCalculator getInstance(final int ploidy, final int alleleCount) {
+---
+>     public synchronized GenotypeLikelihoodCalculator getInstance(final int ploidy, final int alleleCount) {
+248,249c264
+<         TableState tableState = tableStateThreadLocal.get();
+<         if (calculateGenotypeCountUsingTables(tableState, ploidy, alleleCount) == GENOTYPE_COUNT_OVERFLOW) {
+---
+>         if (calculateGenotypeCountUsingTables(ploidy, alleleCount) == GENOTYPE_COUNT_OVERFLOW) {
+255c270
+<         return new GenotypeLikelihoodCalculator(ploidy, alleleCount, tableState.alleleFirstGenotypeOffsetByPloidy, tableState.genotypeTableByPloidy);
+---
+>         return new GenotypeLikelihoodCalculator(ploidy, alleleCount, alleleFirstGenotypeOffsetByPloidy, genotypeTableByPloidy);
+264c279
+<     private void ensureCapacity(TableState tableState, final int requestedMaximumAllele, final int requestedMaximumPloidy) {
+---
+>     private synchronized void ensureCapacity(final int requestedMaximumAllele, final int requestedMaximumPloidy) {
+266,267c281,282
+<         final boolean needsToExpandAlleleCapacity = requestedMaximumAllele > tableState.maximumAllele;
+<         final boolean needsToExpandPloidyCapacity = requestedMaximumPloidy > tableState.maximumPloidy;
+---
+>         final boolean needsToExpandAlleleCapacity = requestedMaximumAllele > maximumAllele;
+>         final boolean needsToExpandPloidyCapacity = requestedMaximumPloidy > maximumPloidy;
+273,274c288,289
+<         final int newMaximumPloidy = Math.max(tableState.maximumPloidy, requestedMaximumPloidy);
+<         final int newMaximumAllele = Math.max(tableState.maximumAllele, requestedMaximumAllele);
+---
+>         final int newMaximumPloidy = Math.max(maximumPloidy, requestedMaximumPloidy);
+>         final int newMaximumAllele = Math.max(maximumAllele, requestedMaximumAllele);
+276c291
+<         logger.debug("Expanding capacity ploidy:" + tableState.maximumPloidy + "->" + newMaximumPloidy + " allele:" +  tableState.maximumAllele +"->" + newMaximumAllele );
+---
+>         logger.debug("Expanding capacity ploidy:" + maximumPloidy + "->" + newMaximumPloidy + " allele:" +  maximumAllele +"->" + newMaximumAllele );
+279,280c294,295
+<         tableState.alleleFirstGenotypeOffsetByPloidy = buildAlleleFirstGenotypeOffsetTable(newMaximumPloidy,newMaximumAllele);
+<         tableState.genotypeTableByPloidy = buildGenotypeAlleleCountsTable(newMaximumPloidy,newMaximumAllele,tableState.alleleFirstGenotypeOffsetByPloidy);
+---
+>         alleleFirstGenotypeOffsetByPloidy = buildAlleleFirstGenotypeOffsetTable(newMaximumPloidy,newMaximumAllele);
+>         genotypeTableByPloidy = buildGenotypeAlleleCountsTable(newMaximumPloidy,newMaximumAllele,alleleFirstGenotypeOffsetByPloidy);
+283c298
+<             tableState.maximumAllele = requestedMaximumAllele;
+---
+>             maximumAllele = requestedMaximumAllele;
+286c301
+<             tableState.maximumPloidy = requestedMaximumPloidy;
+---
+>             maximumPloidy = requestedMaximumPloidy;
+309c324
+<                 "capacity for requested maximum ploidy: " + maximumPloidy);
+---
+>                     "capacity for requested maximum ploidy: " + maximumPloidy);
+311c326
+<                 "capacity for requested maximum allele index: " + maximumAllele);
+---
+>                     "capacity for requested maximum allele index: " + maximumAllele);
+327c342
+<         final int result = calculateGenotypeCountUsingTables(tableStateThreadLocal.get(), ploidy, alleleCount);
+---
+>         final int result = calculateGenotypeCountUsingTables(ploidy, alleleCount);
+371c386
+<     private int calculateGenotypeCountUsingTables(TableState tableState, int ploidy, int alleleCount) {
+---
+>     private synchronized int calculateGenotypeCountUsingTables(int ploidy, int alleleCount) {
+373,374c388,389
+<         ensureCapacity(tableState, alleleCount, ploidy);
+<         return tableState.alleleFirstGenotypeOffsetByPloidy[ploidy][alleleCount];
+---
+>         ensureCapacity(alleleCount, ploidy);
+>         return alleleFirstGenotypeOffsetByPloidy[ploidy][alleleCount];
+376,377c391
+< }
+< 
+---
+> }
+\ No newline at end of file

@@ -1,0 +1,9 @@
+file_path,sample_id,paired_end,read_group_id
+../a/Sample1_R1_001.fastq,Sample1,1,A
+../a/Sample1_R2_001.fastq,Sample1,2,A
+../a/Sample2_R1_001.fastq,Sample2,1,B
+../a/Sample2_R2_001.fastq,Sample2,2,B
+../a/Sample3_C_R1_*.fastq,Sample3,1,C
+../a/Sample3_C_R2_*.fastq,Sample3,2,C
+../a/Sample3_D_R1_*.fastq,Sample3,1,D
+../a/Sample3_D_R2_*.fastq,Sample3,2,D

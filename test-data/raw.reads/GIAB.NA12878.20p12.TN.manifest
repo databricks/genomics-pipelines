@@ -1,0 +1,3 @@
+pair_id,file_path,sample_id,label,paired_end,read_group_id
+NA12878,GIAB.NA12878.20p12.1/NA12878.20p12.1.30x.bam,NA12878_normal,normal,,normal
+NA12878,GIAB.NA12878.20p12.1/NA12878.20p12.1.30x.bam,NA12878_tumor,tumor,,tumor

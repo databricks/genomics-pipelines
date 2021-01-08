@@ -1,0 +1,2 @@
+file_path,sample_id,paired_end,read_group_id
+bwa_mem_paired_end.bam,NA12878,,read_group

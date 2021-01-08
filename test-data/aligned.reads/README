@@ -1,0 +1,19 @@
+To align reads with BWA-mem:
+
+- Clone BWA (https://github.com/lh3/bwa) at commit cb95061 (used by the GATK's BWA-mem JNI)
+- Set up BWA
+- For paired-end reads, run:
+  + ~/bwa/bwa mem -R '@RG\tID:ReadGroup\tSM:NA12878' \
+      ~/gatk/src/test/resources/large/human_g1k_v37.20.21.fasta \
+      ../raw.reads/GIAB.NA12878.20p12.1/reads_one.fastq.gz \
+      ../raw.reads/GIAB.NA12878.20p12.1/reads_two.fastq.gz | \
+      samtools sort -o bwa_mem_paired_end.bam
+  + samtools index bwa_mem_paired_end.bam
+- For single-end reads, run:
+  + ~/bwa/bwa mem -R '@RG\tID:ReadGroup\tSM:NA12878' \
+      ~/gatk/src/test/resources/large/human_g1k_v37.20.21.fasta \
+      ../raw.reads/GIAB.NA12878.20p12.1/reads_one.fastq.gz | \
+      samtools sort -o bwa_mem_single_end.bam
+- Upload SAM and BAM results and update the checked in files' SHA
+  + ~/universe/bazel/bin/upload_binary bwa_mem_paired_end.bam
+  + ~/universe/bazel/bin/upload_binary bwa_mem_single_end.bam

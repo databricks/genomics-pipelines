@@ -20,8 +20,8 @@ docs/build
 .idea
 
 # Logs
-adam.log
-unit-tests.log
+# *.log
+
 
 # Big files
 test-data/big-files/

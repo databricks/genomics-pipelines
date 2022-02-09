@@ -10,10 +10,9 @@ Spark based pipelines for:
 # Building and testing
 
 1. Clone the repo
-2. Download the big test files from `s3://dbgenomics/pipelines.data/big-files.tar.gz` (in the dev
-   AWS account)
-3. Unpack the big test files archive at the project root
-4. `sbt test`
+2. Unpack the big test files archive located in the project root
+  - `tar -xf big-files.tar.gz` 
+3. `sbt test`
 
 # Running on a Databricks cluster
 

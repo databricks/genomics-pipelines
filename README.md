@@ -21,3 +21,11 @@ Spark based pipelines for:
 2. Build an uber jar (`sbt assembly`)
 3. Create a cluster with the init script from step 1 and attach the assembly jar.
 4. Run the desired pipeline using one of the attached notebooks.
+
+# License
+
+[Apache 2.0](LICENSE)
+
+## Disclaimer
+
+This is not an official Databricks product. This project is released without an expectation of continued development or maintenance.
